@@ -22,10 +22,7 @@ import fr.thomas.orm.interfaces.DAO;
  * @param <T>
  */
 public class Model<T> implements DAO<T> {
-
-	// Stock le type de l'entité pour la réutiliser dans les méthodes
-	private Class<T> T;
-
+	
 	public T create(T object) {
 		// TODO Auto-generated method stub
 		return null;
@@ -52,7 +49,7 @@ public class Model<T> implements DAO<T> {
 		// Création du statement
 		Statement statement = connection.createStatement();
 		// Récupération du résultat de la requête
-		ResultSet rs = statement.executeQuery("SELECT * FROM " + getTable(T));
+		ResultSet rs = statement.executeQuery("SELECT * FROM ");
 		while (rs.next()) {
 			
 		}
@@ -113,6 +110,10 @@ public class Model<T> implements DAO<T> {
 		return columns;
 	}
 
+	/**
+	 * Get URL to the database
+	 * @return
+	 */
 	private String getUrl() {
 		return "jdbc:mysql://" + ORMConfig.server + ":" + ORMConfig.port + "/" + ORMConfig.database
 				+ "?serverTimezone=" + ORMConfig.serverTimeZone;
