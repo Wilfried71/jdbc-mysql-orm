@@ -23,6 +23,12 @@ import fr.thomas.orm.interfaces.DAO;
  */
 public class Model<T> implements DAO<T> {
 	
+	Class<T> myClass;
+	
+	public Model(Class<T> providedClass) {
+		myClass = providedClass;
+	}
+	
 	public T create(T object) {
 		// TODO Auto-generated method stub
 		return null;
@@ -45,13 +51,13 @@ public class Model<T> implements DAO<T> {
 
 	public List<T> findAll() throws SQLException {
 		// Création de la connexion à la base de données
-		Connection connection = DriverManager.getConnection(getUrl(), "lambda", "lambda");
+		Connection connection = DriverManager.getConnection(getUrl(), ORMConfig.username, ORMConfig.password);
 		// Création du statement
 		Statement statement = connection.createStatement();
 		// Récupération du résultat de la requête
-		ResultSet rs = statement.executeQuery("SELECT * FROM ");
+		ResultSet rs = statement.executeQuery("SELECT * FROM " + getTable(myClass));
 		while (rs.next()) {
-			
+			// Implémenter le tri des valeurs pour le databinding
 		}
 		rs.close();
 		statement.close();
