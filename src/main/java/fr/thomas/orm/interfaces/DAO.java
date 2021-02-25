@@ -1,5 +1,6 @@
 package fr.thomas.orm.interfaces;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,8 +44,9 @@ public interface DAO<T> {
 	/**
 	 * Fonction qui retourne tous les éléments d'une table donnée
 	 * @return
+	 * @throws SQLException 
 	 */
-	List<T> findAll();
+	List<T> findAll() throws SQLException;
 	
 	/**
 	 * Fonction qui retourne un objet dont l'identifiant est passé en paramètres
