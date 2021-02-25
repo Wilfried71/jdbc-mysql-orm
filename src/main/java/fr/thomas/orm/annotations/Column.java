@@ -6,12 +6,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation qui spécifie que le champ est une clé primaire
+ * Annotation qui indique que le champ est relié à une colonne en base.
  * @author tpeyr
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface PrimaryKey {
-	
+public @interface Column {
+	/**
+	 * Nom du champ dans la base de données.
+	 */
+	String name();
 }
