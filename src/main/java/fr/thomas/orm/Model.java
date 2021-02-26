@@ -1,16 +1,21 @@
 package fr.thomas.orm;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import fr.thomas.orm.annotations.Column;
+import fr.thomas.orm.annotations.PrimaryKey;
 import fr.thomas.orm.annotations.Table;
 import fr.thomas.orm.interfaces.DAO;
 
@@ -22,13 +27,13 @@ import fr.thomas.orm.interfaces.DAO;
  * @param <T>
  */
 public class Model<T> implements DAO<T> {
-	
-	Class<T> myClass;
-	
+
+	private Class<T> myClass;
+
 	public Model(Class<T> providedClass) {
 		myClass = providedClass;
 	}
-	
+
 	public T create(T object) {
 		// TODO Auto-generated method stub
 		return null;
@@ -49,20 +54,26 @@ public class Model<T> implements DAO<T> {
 
 	}
 
-	public List<T> findAll() throws SQLException {
+	public List<T> findAll()
+			throws SQLException, IllegalArgumentException, IllegalAccessException, InstantiationException,
+			InvocationTargetException, NoSuchMethodException, SecurityException, ParseException {
 		// Création de la connexion à la base de données
 		Connection connection = DriverManager.getConnection(getUrl(), ORMConfig.username, ORMConfig.password);
 		// Création du statement
 		Statement statement = connection.createStatement();
 		// Récupération du résultat de la requête
-		ResultSet rs = statement.executeQuery("SELECT * FROM " + getTable(myClass));
+		ResultSet rs = statement.executeQuery("SELECT * FROM " + getTable());
+
+		// Create items list
+		List<T> items = new ArrayList<T>();
+
 		while (rs.next()) {
-			// Implémenter le tri des valeurs pour le databinding
+			items.add(bindData(rs));
 		}
 		rs.close();
 		statement.close();
 		connection.close();
-		return null;
+		return items;
 	}
 
 	public Optional<T> findById(Long id) {
@@ -71,14 +82,77 @@ public class Model<T> implements DAO<T> {
 	}
 
 	/**
+	 * Convertit un resultset en objet de type T.
+	 * 
+	 * @param rs
+	 * @return
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws SecurityException
+	 * @throws NoSuchMethodException
+	 * @throws InvocationTargetException
+	 * @throws InstantiationException
+	 * @throws SQLException
+	 * @throws ParseException
+	 */
+	private T bindData(ResultSet rs) throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			InvocationTargetException, NoSuchMethodException, SecurityException, SQLException, ParseException {
+		// Get columns of the class
+		List<Field> columns = getColumns();
+
+		// Create new Instance of the class
+		T tObject = myClass.getDeclaredConstructor().newInstance();
+
+		// Pour chaque champ
+		for (Field field : columns) {
+
+			// Rend le champ accessible
+			field.setAccessible(true);
+
+			// Si le champ est un Long ou une clé primaire
+			if (field.getType().equals(Long.class) || isPrimaryKey(field)) {
+				field.set(tObject, rs.getLong(field.getAnnotation(Column.class).name()));
+			}
+
+			// Si le champ est un Long ou une clé primaire
+			if (field.getType().equals(Float.class)) {
+				field.set(tObject, rs.getFloat(field.getAnnotation(Column.class).name()));
+			}
+
+			// Si le champ est un string
+			if (field.getType().equals(String.class)) {
+				field.set(tObject, rs.getString(field.getAnnotation(Column.class).name()));
+			}
+
+			// Si le champ est une Date
+			if (field.getType().equals(Date.class)) {
+				field.set(tObject, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+						.parseObject(rs.getString(field.getAnnotation(Column.class).name())));
+			}
+
+			// TODO : Appeler le findById si le champ est une clé étrangère.
+		}
+		return tObject;
+	}
+
+	/**
+	 * Check si le champ est une clé primaire
+	 * 
+	 * @param field
+	 * @return
+	 */
+	public Boolean isPrimaryKey(Field field) {
+		return field.getAnnotation(PrimaryKey.class) != null;
+	}
+
+	/**
 	 * Retourne le nom de la table à laquelle la classe fait référence
 	 * 
-	 * @param classToAnalyse
 	 * @return Le nom si la table est renseignée, sinon renvoie null.
 	 */
-	public String getTable(Class<T> classToAnalyse) {
+	public String getTable() {
 		// Récupération de l'annotation @Table
-		Table tableAnnotation = classToAnalyse.getAnnotation(Table.class);
+		Table tableAnnotation = myClass.getAnnotation(Table.class);
 		// Si l'annotation existe
 		if (tableAnnotation != null) {
 			return tableAnnotation.name();
@@ -90,16 +164,15 @@ public class Model<T> implements DAO<T> {
 	/**
 	 * Retourne la liste des champs reliés à la base.
 	 * 
-	 * @param classToAnalyse
 	 * @return La liste des champs qui référencent une colonne
 	 */
-	public List<Field> getColumns(Class<T> classToAnalyse) {
+	public List<Field> getColumns() {
 
 		// Création d'une liste qui va stocker la liste des colonnes.
 		List<Field> columns = new ArrayList<Field>();
 
 		// Récupération de la liste des champs de la classe
-		Field[] fields = classToAnalyse.getDeclaredFields();
+		Field[] fields = myClass.getDeclaredFields();
 
 		// Pour chaque champ de la classe
 		for (Field field : fields) {
@@ -118,11 +191,12 @@ public class Model<T> implements DAO<T> {
 
 	/**
 	 * Get URL to the database
+	 * 
 	 * @return
 	 */
 	private String getUrl() {
-		return "jdbc:mysql://" + ORMConfig.server + ":" + ORMConfig.port + "/" + ORMConfig.database
-				+ "?serverTimezone=" + ORMConfig.serverTimeZone;
+		return "jdbc:mysql://" + ORMConfig.server + ":" + ORMConfig.port + "/" + ORMConfig.database + "?serverTimezone="
+				+ ORMConfig.serverTimeZone;
 	}
 
 }

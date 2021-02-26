@@ -1,6 +1,8 @@
 package fr.thomas.orm.interfaces;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,8 +47,15 @@ public interface DAO<T> {
 	 * Fonction qui retourne tous les éléments d'une table donnée
 	 * @return
 	 * @throws SQLException 
+	 * @throws SecurityException 
+	 * @throws NoSuchMethodException 
+	 * @throws InvocationTargetException 
+	 * @throws InstantiationException 
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
+	 * @throws ParseException 
 	 */
-	List<T> findAll() throws SQLException;
+	List<T> findAll() throws SQLException, IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException, ParseException;
 	
 	/**
 	 * Fonction qui retourne un objet dont l'identifiant est passé en paramètres
