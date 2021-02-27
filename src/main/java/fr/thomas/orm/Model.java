@@ -1,6 +1,5 @@
 package fr.thomas.orm;
 
-import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
@@ -157,12 +156,14 @@ public class Model<T> implements DAO<T> {
 			}
 
 			// Si le champ est une clé étrangère, on charge l'objet
-			/*if (isForeignKey(field)) {
-				Model<field.getClass()> model = null;
+			if (isForeignKey(field)) {
+				// Création du modèle pour l'entité étrangère
+				Model<?> model = getModelOfType(field.getType());
 				
-				field.set(tObject, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-						.parseObject(rs.getString(field.getAnnotation(Column.class).name())));
-			}*/
+				// On récupère l'objet clé étrangère
+				Object fkObject = model.findById(rs.getLong(field.getAnnotation(Column.class).name()));
+				field.set(tObject, fkObject);
+			}
 		}
 		return tObject;
 	}
@@ -241,6 +242,18 @@ public class Model<T> implements DAO<T> {
 				+ ORMConfig.serverTimeZone;
 	}
 
+	/**
+	 * Instancie un objet {@link Model} avec le type passé en paramètre
+	 * @param <X>
+	 * @param c
+	 * @return
+	 */
+	private <X> Model<X> getModelOfType(Class<X> c) {
+		return new Model<X>(c);
+	}
+	
+		
+	
 	/**
 	 * Renvoie la liste de clés primaires de la classe
 	 * 
