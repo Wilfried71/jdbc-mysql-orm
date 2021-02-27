@@ -61,6 +61,14 @@ public interface DAO<T> {
 	 * Fonction qui retourne un objet dont l'identifiant est passé en paramètres
 	 * @param id
 	 * @return
+	 * @throws SQLException 
+	 * @throws ParseException 
+	 * @throws SecurityException 
+	 * @throws NoSuchMethodException 
+	 * @throws InvocationTargetException 
+	 * @throws InstantiationException 
+	 * @throws IllegalAccessException 
+	 * @throws IllegalArgumentException 
 	 */
-	Optional<T> findById(Long id);
+	T findById(Long id) throws SQLException, IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException, ParseException;
 }

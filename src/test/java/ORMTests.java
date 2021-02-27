@@ -28,9 +28,10 @@ public class ORMTests {
 		
 		
 		
-		System.out.println(produitModel.getColumns()); 
+		//System.out.println(produitModel.getColumns()); 
 		List<Produit> produits = produitModel.findAll();
 		System.out.println(produits);
+		System.out.println(produitModel.findById(2L));
 		
 	}
 
