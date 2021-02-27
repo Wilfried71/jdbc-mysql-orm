@@ -66,14 +66,19 @@ public class Model<T> implements DAO<T> {
 			// On incrémente l'id
 			i++;
 		}
-		
+
 		// Execution de la requete
 		stmt.execute();
 		// Récupération du dernier id
 		ResultSet rs = stmt.getGeneratedKeys();
 		rs.next();
+		
+		Long newId = Long.parseLong(rs.getString(1));
+		rs.close();
+		stmt.close();
+		connection.close();
 		// Renvoie l'objet créé
-		return findById(Long.parseLong(rs.getString(1)));
+		return findById(newId);
 	}
 
 	public T update(T object) {
@@ -81,14 +86,24 @@ public class Model<T> implements DAO<T> {
 		return null;
 	}
 
-	public void delete(T object) {
-		// TODO Auto-generated method stub
-
+	public void delete(T object) throws Exception {
+		Field firstPK = getPrimaryKeys().get(0);
+		firstPK.setAccessible(true);
+		deleteById((Long) firstPK.get(object));
 	}
 
-	public void deleteById(Long id) {
-		// TODO Auto-generated method stub
+	public void deleteById(Long id) throws Exception {
+		// Création de la connexion à la base de données
+		Connection connection = DriverManager.getConnection(getUrl(), ORMConfig.username, ORMConfig.password);
 
+		// On récupère le premier champ Clé primaire
+		Field firstPK = getPrimaryKeys().get(0);
+
+		// On crée la requête préparée
+		PreparedStatement stmt = connection
+				.prepareStatement("DELETE FROM " + getTable() + " WHERE " + firstPK.getAnnotation(Column.class).name() + "=?;");
+		stmt.setLong(1, id);
+		stmt.execute();
 	}
 
 	public List<T> findAll()

@@ -35,14 +35,16 @@ public interface DAO<T> {
 	 * Méthode qui sert à supprimer un objet dans la base de données.<br>
 	 * Seul le ou les champs identifiants sont pris en compte dans la méthode.
 	 * @param object
+	 * @throws Exception 
 	 */
-	void delete(T object);
+	void delete(T object) throws Exception;
 	
 	/**
 	 * Méthode qui sert à supprimer un objet dans la base de données, dont l'identifiant est passé en paramètres.<br>
 	 * @param object
+	 * @throws Exception 
 	 */
-	void deleteById(Long id);
+	void deleteById(Long id) throws Exception;
 	
 	/**
 	 * Fonction qui retourne tous les éléments d'une table donnée

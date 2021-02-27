@@ -26,7 +26,7 @@ public class ORMTests {
 		ORMConfig.port = "3306";
 		
 		
-		List<Produit> produits = produitModel.findAll();
+		/*List<Produit> produits = produitModel.findAll();
 		System.out.println(produits);
 		
 		
@@ -36,8 +36,11 @@ public class ORMTests {
 		newProduit.setDateCreation(new Date());
 		newProduit.setTypeProduit(1L);
 		newProduit = produitLightModel.create(newProduit);
-		System.out.println(produitModel.findById(newProduit.getId()));
-		
+		System.out.println(produitModel.findById(newProduit.getId()));*/
+		Produit p = new Produit();
+		p.setId(16L);
+		produitModel.delete(p);
+		//produitModel.deleteById(15L);
 	}
 
 }
