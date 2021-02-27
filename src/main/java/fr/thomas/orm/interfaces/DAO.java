@@ -20,8 +20,9 @@ public interface DAO<T> {
 	 * Si les champs identifiants sont renseignés, la requête sera quand même tentée.
 	 * @param object
 	 * @return L'objet qui est créé.
+	 * @throws Exception 
 	 */
-	T create(T object);
+	T create(T object) throws Exception;
 	
 	/**
 	 * Méthode qui sert à modifier un objet dont le ou les champs identifiants sont renseignés.<br>

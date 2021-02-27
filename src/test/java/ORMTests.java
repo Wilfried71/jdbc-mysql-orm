@@ -1,3 +1,4 @@
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
@@ -10,7 +11,7 @@ public class ORMTests {
 	// Modèle du produit
 	Model<Produit> produitModel = new Model<Produit>(Produit.class);
 	
-	
+	Model<ProduitLight> produitLightModel = new Model<ProduitLight>(ProduitLight.class);
 
 	@Test
 	public void test() throws Exception{
@@ -21,17 +22,21 @@ public class ORMTests {
 		ORMConfig.username = "lambda";
 		ORMConfig.server = "localhost";
 		ORMConfig.password = "lambda";
-		ORMConfig.serverTimeZone = "UTC";
+		ORMConfig.serverTimeZone = "Europe/Paris";
 		ORMConfig.port = "3306";
 		
 		
-		
-		
-		
-		//System.out.println(produitModel.getColumns()); 
 		List<Produit> produits = produitModel.findAll();
 		System.out.println(produits);
-		System.out.println(produitModel.findById(0L));
+		
+		
+		ProduitLight newProduit = new ProduitLight();
+		newProduit.setLibelle("Produit test");
+		newProduit.setPrix(9.99f);
+		newProduit.setDateCreation(new Date());
+		newProduit.setTypeProduit(1L);
+		newProduit = produitLightModel.create(newProduit);
+		System.out.println(produitModel.findById(newProduit.getId()));
 		
 	}
 
