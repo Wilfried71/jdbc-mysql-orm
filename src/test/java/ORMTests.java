@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -37,10 +38,11 @@ public class ORMTests {
 		newProduit.setTypeProduit(1L);
 		newProduit = produitLightModel.create(newProduit);
 		System.out.println(produitModel.findById(newProduit.getId()));*/
-		Produit p = new Produit();
+		/*Produit p = new Produit();
 		p.setId(16L);
-		produitModel.delete(p);
+		produitModel.delete(p);*/
 		//produitModel.deleteById(15L);
+		//System.out.println(produitModel.query("SELECT * FROM t_produit WHERE id_produit IN (?,?)", Arrays.asList(1L, 17L)));
 	}
 
 }

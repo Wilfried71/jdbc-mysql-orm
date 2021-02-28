@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -59,6 +60,15 @@ public interface DAO<T> {
 	 * @throws ParseException 
 	 */
 	List<T> findAll() throws SQLException, IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, SecurityException, ParseException;
+	
+	/**
+	 * Réalise une requête préparée de type SELECT.
+	 * @param query
+	 * @param fields
+	 * @return
+	 * @throws Exception 
+	 */
+	List<T> query(String query, List<?> fields) throws Exception;
 	
 	/**
 	 * Fonction qui retourne un objet dont l'identifiant est passé en paramètres

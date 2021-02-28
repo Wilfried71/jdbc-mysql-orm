@@ -72,7 +72,7 @@ public class Model<T> implements DAO<T> {
 		// Récupération du dernier id
 		ResultSet rs = stmt.getGeneratedKeys();
 		rs.next();
-		
+
 		Long newId = Long.parseLong(rs.getString(1));
 		rs.close();
 		stmt.close();
@@ -100,8 +100,8 @@ public class Model<T> implements DAO<T> {
 		Field firstPK = getPrimaryKeys().get(0);
 
 		// On crée la requête préparée
-		PreparedStatement stmt = connection
-				.prepareStatement("DELETE FROM " + getTable() + " WHERE " + firstPK.getAnnotation(Column.class).name() + "=?;");
+		PreparedStatement stmt = connection.prepareStatement(
+				"DELETE FROM " + getTable() + " WHERE " + firstPK.getAnnotation(Column.class).name() + "=?;");
 		stmt.setLong(1, id);
 		stmt.execute();
 	}
@@ -373,6 +373,37 @@ public class Model<T> implements DAO<T> {
 			}
 			return stmt;
 		}
+	}
+
+	
+	
+	
+	public List<T> query(String query, List<?> fields) throws Exception {
+		// Création de la connexion à la base de données
+		Connection connection = DriverManager.getConnection(getUrl(), ORMConfig.username, ORMConfig.password);
+
+		// On crée la requête préparée
+		PreparedStatement stmt = connection.prepareStatement(query);
+
+		// On ajoute chaque champ à la requête préparée
+		for (Object item : fields) {
+
+			stmt.setObject(fields.indexOf(item) + 1, item);
+		}
+
+		// Execution de la requete
+		ResultSet rs = stmt.executeQuery();
+		
+		// Create items list
+		List<T> items = new ArrayList<T>();
+
+		while (rs.next()) {
+			items.add(bindDataToObject(rs));
+		}
+		rs.close();
+		stmt.close();
+		connection.close();
+		return items;
 	}
 
 }
