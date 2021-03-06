@@ -29,8 +29,9 @@ public interface DAO<T> {
 	 * Méthode qui sert à modifier un objet dont le ou les champs identifiants sont renseignés.<br>
 	 * @param object
 	 * @return L'objet qui est modifié.
+	 * @throws Exception 
 	 */
-	T update(T object);
+	T update(T object) throws Exception;
 	
 	/**
 	 * Méthode qui sert à supprimer un objet dans la base de données.<br>

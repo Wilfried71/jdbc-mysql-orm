@@ -27,7 +27,10 @@ public class ORMTests {
 		ORMConfig.port = "3306";
 		
 		
-		/*List<Produit> produits = produitModel.findAll();
+		System.out.println(produitModel.findAll());
+		System.out.println(produitModel.findById(17L));
+	
+		List<Produit> produits = produitModel.findAll();
 		System.out.println(produits);
 		
 		
@@ -37,12 +40,8 @@ public class ORMTests {
 		newProduit.setDateCreation(new Date());
 		newProduit.setTypeProduit(1L);
 		newProduit = produitLightModel.create(newProduit);
-		System.out.println(produitModel.findById(newProduit.getId()));*/
-		/*Produit p = new Produit();
-		p.setId(16L);
-		produitModel.delete(p);*/
-		//produitModel.deleteById(15L);
-		//System.out.println(produitModel.query("SELECT * FROM t_produit WHERE id_produit IN (?,?)", Arrays.asList(1L, 17L)));
+		System.out.println(newProduit);
+		
 	}
 
 }

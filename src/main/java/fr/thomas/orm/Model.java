@@ -62,7 +62,7 @@ public class Model<T> implements DAO<T> {
 		// On ajoute chaque champ à la requête préparée
 		for (Field field : columns) {
 
-			setValueIfNotNull(field, object, i, stmt);
+			setValueIfNotNull(field, object, i, stmt, true);
 			// On incrémente l'id
 			i++;
 		}
@@ -81,9 +81,52 @@ public class Model<T> implements DAO<T> {
 		return findById(newId);
 	}
 
-	public T update(T object) {
-		// TODO Auto-generated method stub
-		return null;
+	public T update(T object) throws Exception {
+		// Création de la connexion à la base de données
+		Connection connection = DriverManager.getConnection(getUrl(), ORMConfig.username, ORMConfig.password);
+
+		// Get columns of the class
+		List<Field> columns = getColumns();
+
+		// On crée la requête au format String
+		String request = "UPDATE " + getTable() + " SET ";
+
+		// Pour chaque champ, on ajoute un ? dans la requête préparée
+		for (Field field : columns) {
+			field.setAccessible(true);
+			if (!isPrimaryKey(field)) {
+				request += field.getAnnotation(Column.class).name() + "=?,";
+			}
+		}
+
+		request = request.substring(0, request.length() - 1) + " WHERE "
+				+ getPrimaryKeys().get(0).getAnnotation(Column.class).name() + "=?;";
+
+		// On crée la requête préparée
+		PreparedStatement stmt = connection.prepareStatement(request);
+
+		int i = 1;
+		// On ajoute chaque champ à la requête préparée
+		for (Field field : columns) {
+			// Si le champ n'est pas une clé primaire
+			if (!isPrimaryKey(field)) {
+				setValueIfNotNull(field, object, i, stmt, false);
+				// On incrémente l'id
+				i++;
+			}
+
+		}
+		Field pk = getPrimaryKeys().get(0);
+		pk.setAccessible(true);
+		// On ajoute la clé primaire
+		setValueIfNotNull(pk, object, i, stmt, false);
+
+		// Execution de la requete
+		stmt.execute();
+		stmt.close();
+		connection.close();
+		// Renvoie l'objet créé
+		return findById((Long) pk.get(object)); //findById(newId);
 	}
 
 	public void delete(T object) throws Exception {
@@ -338,7 +381,8 @@ public class Model<T> implements DAO<T> {
 	 * @return
 	 * @throws Exception
 	 */
-	private PreparedStatement setValueIfNotNull(Field f, T obj, int index, PreparedStatement stmt) throws Exception {
+	private PreparedStatement setValueIfNotNull(Field f, T obj, int index, PreparedStatement stmt,
+			Boolean isCreateMethod) throws Exception {
 		if (f.get(obj) == null) {
 			stmt.setNull(index, Types.NULL);
 			return stmt;
@@ -363,21 +407,21 @@ public class Model<T> implements DAO<T> {
 				stmt.setObject(index, f.get(obj));
 			} else // Si c'est une clé étrangère
 			if (isForeignKey(f)) {
-				/*
-				 * Model<?> model = getModelOfType(f.getClass()); stmt.setLong(index, (Long)
-				 * model.getPrimaryKeys().get(0).get(obj));
-				 */
-				// FOREIGN KEY pas gérées
-				stmt.setNull(index, Types.NULL);
-				throw new Exception("Les clés étrangères en tant qu'objet ne sont pas encore gérées.");
+
+				if (isCreateMethod) {
+					stmt.setNull(index, Types.NULL);
+					throw new Exception("Les clés étrangères en tant qu'objet ne sont pas encore gérées.");
+				} else {
+					Class<?> fieldClass = f.get(obj).getClass();
+					Field firstPK = getModelOfType(fieldClass).getPrimaryKeys().get(0);
+					firstPK.setAccessible(true);
+					stmt.setObject(index, firstPK.get(f.get(obj)));
+				}
 			}
 			return stmt;
 		}
 	}
 
-	
-	
-	
 	public List<T> query(String query, List<?> fields) throws Exception {
 		// Création de la connexion à la base de données
 		Connection connection = DriverManager.getConnection(getUrl(), ORMConfig.username, ORMConfig.password);
@@ -393,7 +437,7 @@ public class Model<T> implements DAO<T> {
 
 		// Execution de la requete
 		ResultSet rs = stmt.executeQuery();
-		
+
 		// Create items list
 		List<T> items = new ArrayList<T>();
 
