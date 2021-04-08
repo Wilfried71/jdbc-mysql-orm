@@ -25,6 +25,9 @@ public class ProduitLight {
 	@Column(name = "date_creation")
 	private Date dateCreation;
 	
+	@Column(name = "is_deleted")
+	private Boolean isDeleted;
+	
 	public Long getId() {
 		return id;
 	}
@@ -72,15 +75,24 @@ public class ProduitLight {
 		super();
 	}
 
-	public ProduitLight(Long id, String libelle, Float prix, Date dateCreation, Long typeProduit) {
+	public ProduitLight(Long id, String libelle, Float prix, Date dateCreation, Boolean isDeleted, Long typeProduit) {
 		super();
 		this.id = id;
 		this.libelle = libelle;
 		this.prix = prix;
 		this.dateCreation = dateCreation;
+		this.isDeleted = isDeleted;
 		this.typeProduit = typeProduit;
 	}
-	
+
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
+
 	@Override
 	public String toString() {
 		return id + " : " + libelle + " - " + prix + "€ - " + dateCreation.toString() + " ///// " + typeProduit;

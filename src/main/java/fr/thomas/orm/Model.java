@@ -27,6 +27,9 @@ import fr.thomas.orm.interfaces.DAO;
  * @author tpeyr
  *
  * @param <T>
+ * 
+ * @implNote Attention ! Les contraintes de clé étrangère ne fonctionnent pas
+ *           sur les méthodes create et update.
  */
 public class Model<T> implements DAO<T> {
 
@@ -44,16 +47,19 @@ public class Model<T> implements DAO<T> {
 		List<Field> columns = getColumns();
 
 		// On crée la requête au format String
-		String request = "INSERT INTO " + getTable() + " VALUES (";
+		String variablesString = "";
+		String columnNames = "";
 
 		// Pour chaque champ, on ajoute un ? dans la requête préparée
 		for (Field field : columns) {
 			field.setAccessible(true);
-			request += "?,";
+			columnNames += field.getAnnotation(Column.class).name() + ",";
+			variablesString += "?,";
 		}
 		// On supprime la dernière virgule pour éviter une erreur de syntaxe SQL, puis
 		// on rajoute )
-		request = request.substring(0, request.length() - 1) + ")";
+		String request = "INSERT INTO " + getTable() + " (" + columnNames.substring(0, columnNames.length() - 1)
+				+ ") VALUES (" + variablesString.substring(0, variablesString.length() - 1) + ")";
 
 		// On crée la requête préparée
 		PreparedStatement stmt = connection.prepareStatement(request, Statement.RETURN_GENERATED_KEYS);
@@ -126,7 +132,7 @@ public class Model<T> implements DAO<T> {
 		stmt.close();
 		connection.close();
 		// Renvoie l'objet créé
-		return findById((Long) pk.get(object)); //findById(newId);
+		return findById((Long) pk.get(object)); // findById(newId);
 	}
 
 	public void delete(T object) throws Exception {
@@ -242,6 +248,11 @@ public class Model<T> implements DAO<T> {
 			// Si le champ est un string
 			if (field.getType().equals(String.class)) {
 				field.set(tObject, rs.getString(field.getAnnotation(Column.class).name()));
+			}
+
+			// Si le champ est un bool
+			if (field.getType().equals(Boolean.class)) {
+				field.set(tObject, rs.getBoolean(field.getAnnotation(Column.class).name()));
 			}
 
 			// Si le champ est une Date
@@ -401,6 +412,10 @@ public class Model<T> implements DAO<T> {
 			if (f.getType().equals(String.class)) {
 
 				stmt.setString(index, (String) f.get(obj));
+			} else // Si Boolean
+			if (f.getType().equals(Boolean.class)) {
+
+				stmt.setBoolean(index, (Boolean) f.get(obj));
 			} else // Si date
 			if (f.getType().equals(Date.class)) {
 
